@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { assets, dummyDateTimeData, dummyShowsData } from "../assets/assets";
+import { assets } from "../assets/assets";
 import Loading from "../components/Loading";
 import { ArrowRightIcon, ClockIcon } from "lucide-react";
 import isoTimeFormat from "../lib/isoTimeFormat";
@@ -89,6 +89,25 @@ const SeatLayout = () => {
     }
   }
 
+  const bookTickets = async () => {
+    try {
+      if(!user) return toast.error('Please login to proceed.')
+
+        if(!selectedTime || !selectedSeats.length) return toast.error('Please select a time and seat.')
+
+          const {data} = await axios.post('/api/booking/create', {showId: selectedTime.showId, selectedSeats}, {headers: {Authorization: `Bearer ${await getToken()}`}})
+
+          if (data.success){
+            toast.success(data.message)
+            navigate('/my-bookings')
+          }else{
+            toast.error(data.message)
+          }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
   useEffect(() => {
     getShow();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,7 +163,7 @@ const SeatLayout = () => {
           </div>
         </div>
 
-        <button onClick={()=> navigate('/my-bookings')} className="flex items-center gap-1 mt-20 px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-full font-medium cursor-pointer active:scale-95">
+        <button onClick={bookTickets} className="flex items-center gap-1 mt-20 px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-full font-medium cursor-pointer active:scale-95">
           Proceed to Checkout
           <ArrowRightIcon strokeWidth={3} className="w-4 h-4" />
         </button>
